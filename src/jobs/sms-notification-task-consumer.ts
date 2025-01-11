@@ -1,5 +1,5 @@
 import amqplib from "amqplib";
-import BaseConsumer from "./baseConsumer";
+import BaseConsumer from "./base-consumer";
 
 class SMSNotificationTaskConsumer extends BaseConsumer {
   protected getQueueName(): string {

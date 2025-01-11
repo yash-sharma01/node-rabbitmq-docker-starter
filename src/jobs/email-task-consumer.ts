@@ -1,6 +1,7 @@
 import amqplib from "amqplib";
-import BaseConsumer from "./baseConsumer";
+import { QueueEnum } from "../constants/queues";
 import { TaskService } from "../services/task-service";
+import BaseConsumer from "./base-consumer";
 
 class EmailTaskConsumer extends BaseConsumer {
   private readonly taskService: TaskService;
@@ -11,7 +12,7 @@ class EmailTaskConsumer extends BaseConsumer {
   }
 
   protected getQueueName(): string {
-    return "emailTaskQueue";
+    return QueueEnum.SEND_EMAIL;
   }
 
   protected async processJob(

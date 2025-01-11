@@ -9,6 +9,7 @@ services:
     depends_on:
       - mongodb
       - rabbitmq
+    restart: unless-stopped
     environment:
       - MONGODB_URI=mongodb://mongodb:27017/app
       - RABBITMQ_URI=amqp://rabbitmq:5672
@@ -19,12 +20,14 @@ services:
       - mongo-data:/data/db
     ports:
       - "27017:27017"
+    restart: unless-stopped
 
   rabbitmq:
     image: rabbitmq:latest
     ports:
       - "15672:15672"
       - "5672:5672"
+    restart: unless-stopped
 
 volumes:
   mongo-data:

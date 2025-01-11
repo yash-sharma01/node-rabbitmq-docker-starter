@@ -1,34 +1,26 @@
 import { Router } from "express";
 import { rateLimitConfig } from "../config/rate-limit";
-import { TaskController } from "../controllers/task-controller";
-import { validate } from "../middlewares/validate";
+import { taskController } from "../controllers";
 import {
-  createTaskSchema,
-  startTaskSchema,
+  createTaskValidate,
+  startTaskValidate,
 } from "../validations/task.validation";
 
 const router = Router();
 
-const taskController = new TaskController();
-
 router.post(
   "/",
   rateLimitConfig.api,
-  validate(createTaskSchema),
+  createTaskValidate,
   taskController.createTask
 );
 
-router.get(
-  "/",
-  rateLimitConfig.api,
-  // validate(createTaskSchema),
-  taskController.getTasks
-);
+router.get("/", rateLimitConfig.api, taskController.getTasks);
 
 router.post(
   "/start",
   rateLimitConfig.api,
-  validate(startTaskSchema),
+  startTaskValidate,
   taskController.startTask
 );
 

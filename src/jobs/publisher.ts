@@ -1,13 +1,14 @@
-import EmailTaskConsumer from "./emailTaskConsumer";
-import SMSNotificationTaskConsumer from "./smsNotificationTaskConsumer";
+import { QueueType } from "../constants/queues";
+import EmailTaskConsumer from "./email-task-consumer";
+import SMSNotificationTaskConsumer from "./sms-notification-task-consumer";
 
-class RabbitMQHandler {
-  private readonly consumerRegistry: Record<string, any>;
+class Publisher {
+  private readonly consumerRegistry: Record<QueueType, any>;
 
   constructor() {
     this.consumerRegistry = {
-      emailTaskQueue: EmailTaskConsumer,
-      smsNotificationQueue: SMSNotificationTaskConsumer,
+      SEND_EMAIL: EmailTaskConsumer,
+      SEND_SMS_NOTIFICATION: SMSNotificationTaskConsumer,
     };
   }
 
@@ -21,7 +22,7 @@ class RabbitMQHandler {
     SMSNotificationTaskConsumer.consume();
   }
 
-  public sendToQueue(queueName: string, taskData: any) {
+  public sendToQueue(queueName: QueueType, taskData: any) {
     const consumer = this.consumerRegistry[queueName];
 
     if (consumer?.channel) {
@@ -37,4 +38,4 @@ class RabbitMQHandler {
   }
 }
 
-export default new RabbitMQHandler();
+export default new Publisher();

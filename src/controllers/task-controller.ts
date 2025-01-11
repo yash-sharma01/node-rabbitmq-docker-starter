@@ -1,57 +1,50 @@
-import rabbitmqHandler from "../jobs/rabbitmqHandler";
+import { QueueEnum } from "../constants/queues";
+import publisher from "../jobs/publisher";
 import { TaskService } from "../services/task-service";
-import { ApiError } from "../utils/api-error";
-import { ApiResponse } from "../utils/api-response";
-import { asyncHandler } from "../utils/async-handler";
+import {
+  CreateTaskHandler,
+  GetTasksHandler,
+  StartTaskHandler,
+} from "../validations/task.validation";
+import { BaseController } from "./base-controller";
 
-export class TaskController {
+export class TaskController extends BaseController {
   private readonly taskService: TaskService;
 
-  constructor() {
-    this.taskService = new TaskService();
+  constructor(taskService: TaskService) {
+    super();
+    this.taskService = taskService;
   }
 
-  public getTasks = asyncHandler(async (req, res) => {
-    const tasks = await this.taskService.getAllTasks();
-    return ApiResponse.success(res, "Fetched Tasks successfully", tasks, 200);
-  });
-
-  public createTask = asyncHandler(async (req, res) => {
-    if (!req.body?.taskName)
-      return ApiResponse.error(res, "Task name is required", 400);
-
-    let task = null;
+  public getTasks: GetTasksHandler = async (req, res, next) => {
     try {
-      task = await this.taskService.createTask(req.body.taskName);
+      const tasks = await this.taskService.getAllTasks();
+      return this.successResponse(res, "Fetched Tasks successfully", tasks);
     } catch (error) {
-      if (error instanceof ApiError) {
-        return ApiResponse.error(
-          res,
-          "Failed to create task",
-          error.statusCode
-        );
-      }
+      return next(error);
     }
-    return ApiResponse.success(res, "Task created successfully", task, 204);
-  });
+  };
 
-  public startTask = asyncHandler(async (req, res) => {
-    if (!req.body?.taskId)
-      return ApiResponse.error(res, "Task id is required", 400);
+  public createTask: CreateTaskHandler = async (req, res, next) => {
+    try {
+      const { taskName } = req.body;
+      let task = await this.taskService.createTask(taskName);
+      return this.createdResponse(res, "Task created successfully", task);
+    } catch (error) {
+      return next(error);
+    }
+  };
 
+  public startTask: StartTaskHandler = async (req, res, next) => {
     try {
       const updatedTask = await this.taskService.updateTaskById(
         req.body.taskId,
         "started"
       );
-
-      rabbitmqHandler.sendToQueue("emailTaskQueue", { id: updatedTask?.id });
+      publisher.sendToQueue(QueueEnum.SEND_EMAIL, { id: updatedTask?.id });
+      return this.successResponse(res, "Task started successfully");
     } catch (error) {
-      if (error instanceof ApiError) {
-        return ApiResponse.error(res, "Failed to start task", error.statusCode);
-      }
+      return next(error);
     }
-
-    return ApiResponse.success(res, "Logout successful", null, 204);
-  });
+  };
 }

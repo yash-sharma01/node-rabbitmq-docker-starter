@@ -24,21 +24,3 @@ export const rateLimitConfig = {
     legacyHeaders: false,
   }),
 };
-
-// export const rateLimitConfig = {
-//   auth: {
-//     points: 5, // Number of requests
-//     duration: 60 * 15, // 15 minutes
-//     blockDuration: 60 * 60, // 1 hour block
-//   },
-//   api: {
-//     points: 100, // Number of requests
-//     duration: 60, // 1 minute
-//     blockDuration: 60 * 15, // 15 minutes block
-//   },
-//   workspace: {
-//     points: 30,
-//     duration: 60,
-//     blockDuration: 60 * 5,
-//   },
-// };
