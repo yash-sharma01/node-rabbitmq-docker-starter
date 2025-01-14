@@ -10,9 +10,8 @@ services:
       - mongodb
       - rabbitmq
     restart: unless-stopped
-    environment:
-      - MONGODB_URI=mongodb://mongodb:27017/app
-      - RABBITMQ_URI=amqp://rabbitmq:5672
+    env_file:
+      - .env
 
   mongodb:
     image: mongo:latest

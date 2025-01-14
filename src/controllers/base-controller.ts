@@ -1,8 +1,18 @@
-import type { Response } from "express";
-import APIResponse from "../utils/response";
+import { Response, Router } from "express";
 import { APIResponseTypes } from "../types/api-response.types";
+import APIResponse from "../utils/response";
 
-export class BaseController {
+export abstract class BaseController {
+  public router: Router;
+
+  constructor() {
+    this.router = Router();
+    this.initializeRoutes();
+  }
+
+  // Abstract method for initializing routes, to be implemented in derived classes
+  protected abstract initializeRoutes(): void;
+
   public createdResponse = (
     res: Response,
     message: string,
