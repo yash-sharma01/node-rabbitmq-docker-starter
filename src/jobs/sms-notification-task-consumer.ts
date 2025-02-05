@@ -1,9 +1,10 @@
 import amqplib from "amqplib";
 import BaseConsumer from "./base-consumer";
+import { QueueEnum } from "../constants/queues";
 
 class SMSNotificationTaskConsumer extends BaseConsumer {
   protected getQueueName(): string {
-    return "smsTaskQueue";
+    return QueueEnum.SEND_SMS_NOTIFICATION;
   }
 
   protected async processJob(
