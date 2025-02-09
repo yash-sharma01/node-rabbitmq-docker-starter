@@ -11,9 +11,7 @@ import {
   VerifyEmailHandler,
 } from "../validations/auth.validation";
 import { BaseController } from "./base-controller";
-
-const ACCESS_TOKEN_SECRET =
-  process.env.ACCESS_TOKEN_SECRET ?? "yourAccessTokenSecret";
+import { env } from "../config/env";
 
 export class AuthController extends BaseController {
   private readonly emailService: EmailService;
@@ -37,7 +35,7 @@ export class AuthController extends BaseController {
 
       // Send verification email
       const verificationToken = this.authService.generateAccessToken(newUser);
-      const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}`;
+      const verificationLink = `${env.CLIENT_URL}/verify-email?token=${verificationToken}`;
 
       await this.emailService.sendEmail(
         email,
@@ -114,7 +112,7 @@ export class AuthController extends BaseController {
       if (!user) return this.badRequestResponse(res, "User not found");
 
       const resetToken = this.authService.generateAccessToken(user);
-      const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
+      const resetLink = `${env.CLIENT_URL}/reset-password?token=${resetToken}`;
 
       await this.emailService.sendEmail(
         email,
@@ -134,7 +132,7 @@ export class AuthController extends BaseController {
   public resetPassword: ResetPasswordHandler = async (req, res, next) => {
     const { token, newPassword } = req.body;
     try {
-      const decoded: any = jwt.verify(token, ACCESS_TOKEN_SECRET);
+      const decoded: any = jwt.verify(token, env.ACCESS_TOKEN_SECRET);
       const user = await User.findById(decoded.id);
       if (!user)
         return this.badRequestResponse(res, "Invalid or expired token");
@@ -151,7 +149,7 @@ export class AuthController extends BaseController {
   public verifyEmail: VerifyEmailHandler = async (req, res, next) => {
     const { token } = req.body;
     try {
-      const decoded: any = jwt.verify(token, ACCESS_TOKEN_SECRET);
+      const decoded: any = jwt.verify(token, env.ACCESS_TOKEN_SECRET);
       const user = await User.findById(decoded.id);
       if (!user)
         return this.badRequestResponse(res, "Invalid or expired token");
@@ -182,7 +180,7 @@ export class AuthController extends BaseController {
         return this.badRequestResponse(res, "Email is already verified");
 
       const verificationToken = this.authService.generateAccessToken(user);
-      const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}`;
+      const verificationLink = `${env.CLIENT_URL}/verify-email?token=${verificationToken}`;
 
       await this.emailService.sendEmail(
         email,

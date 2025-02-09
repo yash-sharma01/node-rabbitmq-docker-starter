@@ -1,11 +1,12 @@
 import amqplib, { Channel, Connection } from "amqplib";
+import { env } from "../config/env";
 
 export default abstract class BaseConsumer {
   private connection!: Connection;
   public channel!: Channel;
 
   public async connect() {
-    this.connection = await amqplib.connect(process.env.RABBITMQ_URI!);
+    this.connection = await amqplib.connect(env.RABBITMQ_URI);
     this.channel = await this.connection.createChannel();
     await this.channel.assertQueue(this.getQueueName(), { durable: true });
   }

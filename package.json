@@ -7,7 +7,8 @@
     "start": "ts-node src/server.ts",
     "dev": "ts-node-dev --respawn src/server.ts",
     "build": "tsc",
-    "docker:start": "docker-compose up --build",
+    "validate-env": "ts-node src/validate.ts",
+    "docker:start": "npm run validate-env && docker-compose up --build",
     "docker:stop": "docker-compose down"
   },
   "dependencies": {

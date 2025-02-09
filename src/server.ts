@@ -1,5 +1,3 @@
-import "dotenv/config";
-
 import compression from "compression";
 import cors from "cors";
 import express, { Express, Request, Response } from "express";
@@ -12,10 +10,9 @@ import logger from "./utils/logger";
 import publisher from "./jobs/publisher";
 import { connectToMongoDB } from "./utils/db";
 import APIResponse from "./utils/response";
+import { env } from "./config/env";
 
 const app: Express = express();
-
-const PORT = process.env.PORT ?? 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -45,8 +42,8 @@ async function startServer() {
 
     publisher.startConsuming();
 
-    app.listen(PORT, () => {
-      console.log(`Server is up on port: ${PORT}`);
+    app.listen(env.PORT, () => {
+      console.log(`Server is up on port: ${env.PORT}`);
     });
   } catch (error) {
     console.error("Error starting server:", error);
