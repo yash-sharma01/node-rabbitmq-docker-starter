@@ -17,20 +17,28 @@ export const loginValidate = validateRequest({
 });
 export type LoginHandler = typeof loginValidate;
 
-export const forgotPasswordValidate = validateRequest({
+export const initiatePasswordResetValidate = validateRequest({
   body: z.object({
     email: z.string().email("Enter a valid email"),
   }),
 });
-export type ForgotPasswordHandler = typeof forgotPasswordValidate;
+export type InitiatePasswordResetHandler = typeof initiatePasswordResetValidate;
 
-export const resetPasswordValidate = validateRequest({
+export const completePasswordResetValidate = validateRequest({
   body: z.object({
     token: z.string().min(1),
     newPassword: z.string().min(6, "Password must be at least 6 characters"),
   }),
 });
-export type ResetPasswordHandler = typeof resetPasswordValidate;
+export type CompletePasswordResetHandler = typeof completePasswordResetValidate;
+
+export const changePasswordValidate = validateRequest({
+  body: z.object({
+    oldPassword: z.string().min(6, "Password must be at least 6 characters"),
+    newPassword: z.string().min(6, "Password must be at least 6 characters"),
+  }),
+});
+export type ChangePasswordHandler = typeof changePasswordValidate;
 
 export const verifyEmailValidate = validateRequest({
   body: z.object({

@@ -1,17 +1,17 @@
-import jwt from "jsonwebtoken";
+import { env } from "../config/env";
 import { User } from "../models/user.model";
 import { AuthService } from "../services/auth-service";
 import { EmailService } from "../services/email-service";
 import {
-  ForgotPasswordHandler,
+  ChangePasswordHandler,
+  CompletePasswordResetHandler,
+  InitiatePasswordResetHandler,
   LoginHandler,
   RegisterHandler,
   ResendVerificationEmailHandler,
-  ResetPasswordHandler,
   VerifyEmailHandler,
 } from "../validations/auth.validation";
 import { BaseController } from "./base-controller";
-import { env } from "../config/env";
 
 export class AuthController extends BaseController {
   private readonly emailService: EmailService;
@@ -83,6 +83,9 @@ export class AuthController extends BaseController {
         return this.badRequestResponse(res, "Invalid email or password");
       }
 
+      if (!user.isVerified)
+        return this.badRequestResponse(res, "Account not verified");
+
       user.failedAttempts = 0;
       user.lockedUntil = null;
       await user.save();
@@ -105,19 +108,24 @@ export class AuthController extends BaseController {
     }
   };
 
-  public forgotPassword: ForgotPasswordHandler = async (req, res, next) => {
+  public initiatePasswordReset: InitiatePasswordResetHandler = async (
+    req,
+    res,
+    next
+  ) => {
     const { email } = req.body;
     try {
       const user = await User.findOne({ email });
       if (!user) return this.badRequestResponse(res, "User not found");
 
       const resetToken = this.authService.generateAccessToken(user);
+
       const resetLink = `${env.CLIENT_URL}/reset-password?token=${resetToken}`;
 
       await this.emailService.sendEmail(
         email,
         "Reset Your Password",
-        `<a href="${resetLink}">Reset Password</a>`
+        `<a href="${resetLink}">Click here to reset your password</a>`
       );
 
       return this.successResponse(
@@ -125,14 +133,20 @@ export class AuthController extends BaseController {
         "Password reset link sent to your email."
       );
     } catch (error) {
-      return next(error);
+      next(error);
     }
   };
 
-  public resetPassword: ResetPasswordHandler = async (req, res, next) => {
+  public completePasswordReset: CompletePasswordResetHandler = async (
+    req,
+    res,
+    next
+  ) => {
     const { token, newPassword } = req.body;
     try {
-      const decoded: any = jwt.verify(token, env.ACCESS_TOKEN_SECRET);
+      const decoded = this.authService.verifyAccessToken(token);
+      if (decoded.error) return this.badRequestResponse(res, decoded.message);
+
       const user = await User.findById(decoded.id);
       if (!user)
         return this.badRequestResponse(res, "Invalid or expired token");
@@ -142,14 +156,38 @@ export class AuthController extends BaseController {
 
       return this.successResponse(res, "Password reset successful");
     } catch (error) {
-      return next(error);
+      next(error);
+    }
+  };
+
+  public changePassword: ChangePasswordHandler = async (req, res, next) => {
+    const { oldPassword, newPassword } = req.body;
+    try {
+      // Assuming the authentication middleware attaches the logged-in user to req.user.
+      const user = await User.findById(req.user?.id);
+      if (!user) return this.badRequestResponse(res, "User not found");
+
+      // Verify that the provided old password matches the stored password.
+      const isMatch = await user.comparePassword(oldPassword);
+      if (!isMatch)
+        return this.badRequestResponse(res, "Old password is incorrect");
+
+      // Update to the new password.
+      user.password = newPassword;
+      await user.save();
+
+      return this.successResponse(res, "Password changed successfully");
+    } catch (error) {
+      next(error);
     }
   };
 
   public verifyEmail: VerifyEmailHandler = async (req, res, next) => {
     const { token } = req.body;
     try {
-      const decoded: any = jwt.verify(token, env.ACCESS_TOKEN_SECRET);
+      const decoded = this.authService.verifyAccessToken(token);
+      if (decoded.error) return this.badRequestResponse(res, decoded.message);
+
       const user = await User.findById(decoded.id);
       if (!user)
         return this.badRequestResponse(res, "Invalid or expired token");
@@ -162,6 +200,7 @@ export class AuthController extends BaseController {
 
       return this.successResponse(res, "Email verified successfully");
     } catch (error) {
+      console.log({ error });
       return next(error);
     }
   };

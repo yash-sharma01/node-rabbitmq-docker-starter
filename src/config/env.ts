@@ -22,13 +22,13 @@ const envSchema = z.object({
   SMTP_HOST: nonEmptyString(),
   SMTP_USER: nonEmptyString().email(),
   SMTP_PASS: nonEmptyString(),
-  EMAIL_FROM: nonEmptyString().email(),
+  MAIL_FROM: nonEmptyString().email(),
 });
 
 export const env: z.infer<typeof envSchema> = {
   ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET ?? "",
   CLIENT_URL: process.env.CLIENT_URL ?? "",
-  EMAIL_FROM: process.env.EMAIL_FROM ?? "",
+  MAIL_FROM: process.env.MAIL_FROM ?? "",
   MONGODB_URI: process.env.MONGODB_URI ?? "",
   NODE_ENV: (process.env.NODE_ENV ?? "development") as any,
   PORT: (process.env.PORT ?? 8000) as any,

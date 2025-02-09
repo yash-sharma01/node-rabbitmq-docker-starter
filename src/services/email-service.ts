@@ -1,14 +1,15 @@
 import nodemailer from "nodemailer";
 import { BaseService } from "./base-service";
+import { env } from "../config/env";
 
 export class EmailService extends BaseService {
   private static readonly transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT),
+    host: env.SMTP_HOST,
+    port: env.SMTP_PORT,
     secure: false,
     auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
+      user: env.SMTP_USER,
+      pass: env.SMTP_PASS,
     },
   });
 
@@ -17,7 +18,7 @@ export class EmailService extends BaseService {
     subject: string,
     html: string
   ): Promise<void> {
-    const from = process.env.EMAIL_FROM ?? "no-reply@example.com";
+    const from = env.MAIL_FROM;
 
     try {
       await EmailService.transporter.sendMail({
