@@ -5,6 +5,7 @@ import { EmailService } from "../services/email-service";
 import {
   ChangePasswordHandler,
   CompletePasswordResetHandler,
+  GetCurrentUserHandler,
   InitiatePasswordResetHandler,
   LoginHandler,
   RegisterHandler,
@@ -35,7 +36,7 @@ export class AuthController extends BaseController {
 
       // Send verification email
       const verificationToken = this.authService.generateAccessToken(newUser);
-      const verificationLink = `${env.CLIENT_URL}/verify-email?token=${verificationToken}`;
+      const verificationLink = `${env.CLIENT_URL}/verify-email?token=${verificationToken}&email=${email}`;
 
       await this.emailService.sendEmail(
         email,
@@ -163,16 +164,13 @@ export class AuthController extends BaseController {
   public changePassword: ChangePasswordHandler = async (req, res, next) => {
     const { oldPassword, newPassword } = req.body;
     try {
-      // Assuming the authentication middleware attaches the logged-in user to req.user.
       const user = await User.findById(req.user?.id);
       if (!user) return this.badRequestResponse(res, "User not found");
 
-      // Verify that the provided old password matches the stored password.
       const isMatch = await user.comparePassword(oldPassword);
       if (!isMatch)
         return this.badRequestResponse(res, "Old password is incorrect");
 
-      // Update to the new password.
       user.password = newPassword;
       await user.save();
 
@@ -219,7 +217,7 @@ export class AuthController extends BaseController {
         return this.badRequestResponse(res, "Email is already verified");
 
       const verificationToken = this.authService.generateAccessToken(user);
-      const verificationLink = `${env.CLIENT_URL}/verify-email?token=${verificationToken}`;
+      const verificationLink = `${env.CLIENT_URL}/verify-email?token=${verificationToken}&email=${email}`;
 
       await this.emailService.sendEmail(
         email,
@@ -231,6 +229,22 @@ export class AuthController extends BaseController {
         res,
         "Verification email resent successfully."
       );
+    } catch (error) {
+      return next(error);
+    }
+  };
+
+  public getCurrentUser: GetCurrentUserHandler = async (req, res, next) => {
+    try {
+      const user = await User.findById(req.user?.id);
+      if (!user) return this.badRequestResponse(res, "User not found");
+
+      return this.successResponse(res, "Current user fetched successfully", {
+        email: user.email,
+        isVerified: user.isVerified,
+        roles: user.roles,
+        _id: user._id,
+      });
     } catch (error) {
       return next(error);
     }

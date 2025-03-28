@@ -6,6 +6,9 @@ export declare type RequestValidation<TParams, TQuery, TBody> = {
   params?: ZodSchema<TParams>;
   query?: ZodSchema<TQuery>;
   body?: ZodSchema<TBody>;
+  user?: {
+    id: string;
+  };
 };
 
 /**

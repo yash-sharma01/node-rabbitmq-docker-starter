@@ -54,3 +54,6 @@ export const resendVerificationEmailValidate = validateRequest({
 });
 export type ResendVerificationEmailHandler =
   typeof resendVerificationEmailValidate;
+
+export const getCurrentUserValidate = validateRequest({});
+export type GetCurrentUserHandler = typeof getCurrentUserValidate;

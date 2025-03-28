@@ -3,6 +3,7 @@ import { authController } from "../controllers";
 import {
   changePasswordValidate,
   completePasswordResetValidate,
+  getCurrentUserValidate,
   initiatePasswordResetValidate,
   loginValidate,
   registerValidate,
@@ -32,6 +33,13 @@ router.post(
   authMiddleware,
   changePasswordValidate,
   authController.changePassword
+);
+
+router.get(
+  "/me",
+  authMiddleware,
+  getCurrentUserValidate,
+  authController.getCurrentUser
 );
 
 export default router;
